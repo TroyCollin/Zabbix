@@ -1,5 +1,3 @@
-version: "3.8"
-
 networks:
   zabbix-net:
     driver: bridge
@@ -74,3 +72,16 @@ services:
       - mysql-server
       - zabbix-server
 
+  mysql-backup:
+    image: alpine
+    container_name: mysql-backup
+    restart: unless-stopped
+    volumes:
+      - mysql-backups:/var/backups/mysql
+    networks:
+      - zabbix-net
+    entrypoint: ["/bin/sh", "-c", "apk add --no-cache mysql-client && crond -f -d 8"]
+    command: |
+      echo '0 2 * * * mysqldump -h mysql-server -u zabbix -pzabbix_pwd zabbix > /var/backups/mysql/zabbix_$(date +\%F).sql' > /etc/crontabs/root && \
+      echo '0 3 * * * find /var/backups/mysql -type f -name "zabbix_*.sql" -mtime +30 -delete' >> /etc/crontabs/root && \
+      crond -f
