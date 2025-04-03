@@ -13,3 +13,7 @@ ls /var/backups/mysql
 To restore a backup:
 
 docker exec -i mysql-server mysql -u zabbix -pzabbix_pwd zabbix < /path/to/backup.sql
+
+To destory it all:
+
+docker compose down
